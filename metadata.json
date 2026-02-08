@@ -1,0 +1,5 @@
+{
+  "name": "Luma Portrait AI",
+  "description": "High-fidelity AI portrait generator using Gemini 3 Pro. Transform your photos into artistic styles with 2K resolution output.",
+  "requestFramePermissions": []
+}
