@@ -55,7 +55,7 @@ const SwatchIcon = () => (
     </svg>
 );
 
-type View = 'home' | 'features' | 'about';
+type View = 'home' | 'features' | 'about' | 'upload' | 'workspace';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -93,6 +93,11 @@ export default function App() {
     setStatus('idle');
   }, [selectedStyle]);
 
+  const handleStyleSelect = (style: PortraitStyle) => {
+    setSelectedStyle(style);
+    setCurrentView('upload');
+  };
+
   const parsedVariables = useMemo(() => {
     if (!selectedStyle) return [];
     const regex = /\[(.*?)\]/g;
@@ -129,9 +134,6 @@ export default function App() {
         setUploadedImage(reader.result as string);
         setGeneratedImage(null);
         setStatus('idle');
-        // If uploading from home view, stay there.
-        // If user managed to upload from somewhere else (unlikely), force home.
-        setCurrentView('home'); 
       };
       reader.readAsDataURL(file);
     }
@@ -293,225 +295,169 @@ export default function App() {
         {currentView === 'home' && (
           <>
             {/* Step 1: Style Selection (Home) */}
-            {!uploadedImage && (
-              <div className="animate-fade-in pb-20">
-                <div className="text-center space-y-4 max-w-3xl mx-auto mb-16">
-                  <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 tracking-tight">
-                    AI 人像生成工具
-                  </h1>
-                  <p className="text-lg text-zinc-500">
-                    上传你的照片，选择喜欢的艺术风格，让 AI 为你创作独特的艺术人像
-                  </p>
-                </div>
+            <div className="animate-fade-in pb-20">
+              <div className="text-center space-y-4 max-w-3xl mx-auto mb-16">
+                <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 tracking-tight">
+                  AI 人像生成工具
+                </h1>
+                <p className="text-lg text-zinc-500">
+                  上传你的照片，选择喜欢的艺术风格，让 AI 为你创作独特的艺术人像
+                </p>
+              </div>
 
-                <div className="mb-12 text-center">
-                  <h2 className="text-2xl font-bold text-zinc-800">选择你的艺术风格</h2>
-                  <p className="text-zinc-500 mt-2">我们为你准备了 6 种独特的艺术风格，每种风格都能带来不同的视觉体验</p>
-                </div>
+              <div className="mb-12 text-center">
+                <h2 className="text-2xl font-bold text-zinc-800">选择你的艺术风格</h2>
+                <p className="text-zinc-500 mt-2">我们为你准备了 6 种独特的艺术风格，每种风格都能带来不同的视觉体验</p>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {PORTRAIT_STYLES.map((style) => (
-                    <div 
-                      key={style.id}
-                      onClick={() => setSelectedStyle(style)}
-                      className={`group cursor-pointer flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border-2 ${
-                        selectedStyle?.id === style.id 
-                          ? 'border-indigo-600 ring-4 ring-indigo-50 translate-y-[-4px]' 
-                          : 'border-transparent hover:-translate-y-1'
-                      }`}
-                    >
-                      {/* Style Preview Area (Gradient) */}
-                      <div className={`h-48 w-full bg-gradient-to-br ${style.gradient} relative overflow-hidden`}>
-                         <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors"></div>
-                         <div className="absolute bottom-4 left-4">
-                            <span className="bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full shadow-sm text-zinc-900">
-                              2K Resolution
-                            </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {PORTRAIT_STYLES.map((style) => (
+                  <div
+                    key={style.id}
+                    onClick={() => handleStyleSelect(style)}
+                    className={`group cursor-pointer flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border-2 ${
+                      selectedStyle?.id === style.id
+                        ? 'border-indigo-600 ring-4 ring-indigo-50 translate-y-[-4px]'
+                        : 'border-transparent hover:-translate-y-1'
+                    }`}
+                  >
+                    {/* Style Preview Area (Gradient) */}
+                    <div className={`h-48 w-full bg-gradient-to-br ${style.gradient} relative overflow-hidden`}>
+                       <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors"></div>
+                       <div className="absolute bottom-4 left-4">
+                          <span className="bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full shadow-sm text-zinc-900">
+                            2K Resolution
+                          </span>
+                       </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6 flex-1 flex flex-col">
+                      <h3 className="text-xl font-bold text-zinc-900 mb-2">{style.label}</h3>
+                      <p className="text-sm text-zinc-500 leading-relaxed mb-4">
+                        {style.description}
+                      </p>
+                      <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                         <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                           建议: {style.userInstruction.substring(0, 10)}...
+                         </span>
+                         <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                           selectedStyle?.id === style.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                         }`}>
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                              <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                           </svg>
                          </div>
                       </div>
-                      
-                      {/* Content */}
-                      <div className="p-6 flex-1 flex flex-col">
-                        <h3 className="text-xl font-bold text-zinc-900 mb-2">{style.label}</h3>
-                        <p className="text-sm text-zinc-500 leading-relaxed mb-4">
-                          {style.description}
-                        </p>
-                        <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                           <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-                             建议: {style.userInstruction.substring(0, 10)}...
-                           </span>
-                           <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                             selectedStyle?.id === style.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
-                           }`}>
-                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
-                             </svg>
-                           </div>
-                        </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* VIEW: UPLOAD */}
+        {currentView === 'upload' && selectedStyle && (
+          <div className="animate-fade-in max-w-3xl mx-auto">
+            {/* Back Button */}
+            <button
+              onClick={() => setCurrentView('home')}
+              className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 mb-6 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+              </svg>
+              返回首页
+            </button>
+
+            {/* Style Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-zinc-900 mb-2">{selectedStyle.label}</h1>
+              <p className="text-zinc-500">{selectedStyle.description}</p>
+            </div>
+
+            {/* Upload Area */}
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+              <h3 className="text-center text-xl font-bold mb-6">上传你的照片</h3>
+              <label className="block w-full aspect-[21/9] rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-8 group">
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <UploadIcon />
+                </div>
+                <span className="text-base font-semibold text-zinc-700 mb-1">点击上传参考图片</span>
+                <p className="text-sm text-zinc-400">支持 JPEG 或 PNG，最大 5MB</p>
+              </label>
+              <p className="text-center text-xs text-zinc-400 mt-4">
+                当前风格要求: {selectedStyle.userInstruction}
+              </p>
+            </div>
+
+            {/* Uploaded Image Preview */}
+            {uploadedImage && (
+              <div className="mt-6 bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-zinc-900">已上传图片</h3>
+                  <button
+                    onClick={() => setUploadedImage(null)}
+                    className="text-xs text-red-500 hover:text-red-700 font-medium px-3 py-1 bg-red-50 rounded-full"
+                  >
+                    重新上传
+                  </button>
+                </div>
+                <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100">
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Parameters */}
+            {parsedVariables.length > 0 && (
+              <div className="mt-6 bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+                <h3 className="text-lg font-bold text-zinc-900 mb-6">调整画面细节</h3>
+                <div className="space-y-6">
+                  {parsedVariables.map((v) => (
+                    <div key={v.id}>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                        选项 {v.id.split('_')[1]}
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {v.options.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => handleVariableChange(v.originalText, opt)}
+                            className={`px-3 py-2.5 text-sm rounded-xl font-medium transition-all text-left border ${
+                              promptVariables[v.originalText] === opt
+                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200'
+                                : 'bg-white border-gray-200 text-zinc-600 hover:border-indigo-300 hover:bg-indigo-50'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   ))}
                 </div>
-                
-                {/* Step 2: Upload Area */}
-                {selectedStyle && (
-                  <div className="mt-16 animate-fade-in-up">
-                     <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
-                      <h3 className="text-center text-xl font-bold mb-6">上传你的照片</h3>
-                      <label className="block w-full aspect-[21/9] rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-8 group">
-                        <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                        <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                          <UploadIcon />
-                        </div>
-                        <span className="text-base font-semibold text-zinc-700 mb-1">点击上传参考图片</span>
-                        <p className="text-sm text-zinc-400">支持 JPEG 或 PNG，最大 5MB</p>
-                      </label>
-                      <p className="text-center text-xs text-zinc-400 mt-4">
-                        当前风格要求: {selectedStyle.userInstruction}
-                      </p>
-                     </div>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* Workspace: Generate & Edit */}
-            {uploadedImage && selectedStyle && (
-              <div className="grid lg:grid-cols-12 gap-8 h-[calc(100vh-10rem)] min-h-[600px] animate-fade-in">
-                
-                {/* Left Column: Controls */}
-                <div className="lg:col-span-4 flex flex-col h-full">
-                  <div className="bg-white border border-gray-100 shadow-xl rounded-3xl p-6 flex-1 flex flex-col">
-                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                      <div>
-                        <h2 className="text-lg font-bold text-zinc-900">{selectedStyle.label}</h2>
-                        <p className="text-xs text-zinc-500">Gemini 3 Pro • 2K Mode</p>
-                      </div>
-                      <button onClick={() => setUploadedImage(null)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-3 py-1 bg-indigo-50 rounded-full">
-                        更换图片
-                      </button>
-                    </div>
-
-                    {/* Parameters */}
-                    {parsedVariables.length > 0 ? (
-                      <div className="space-y-6 overflow-y-auto pr-2 flex-1 custom-scrollbar">
-                         <p className="text-sm text-zinc-500">
-                           请根据喜好调整以下画面细节：
-                         </p>
-                         {parsedVariables.map((v) => (
-                           <div key={v.id}>
-                             <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
-                                选项 {v.id.split('_')[1]}
-                             </label>
-                             <div className="grid grid-cols-2 gap-2">
-                               {v.options.map((opt) => (
-                                 <button
-                                   key={opt}
-                                   onClick={() => handleVariableChange(v.originalText, opt)}
-                                   className={`px-3 py-2.5 text-sm rounded-xl font-medium transition-all text-left border ${
-                                     promptVariables[v.originalText] === opt
-                                       ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200'
-                                       : 'bg-white border-gray-200 text-zinc-600 hover:border-indigo-300 hover:bg-indigo-50'
-                                   }`}
-                                 >
-                                   {opt}
-                                 </button>
-                               ))}
-                             </div>
-                           </div>
-                         ))}
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex items-center justify-center text-zinc-400 text-sm text-center px-4 bg-gray-50 rounded-xl my-4">
-                        此风格为全自动生成，无需额外设置。
-                      </div>
-                    )}
-
-                    {/* Generate Button */}
-                    <div className="mt-6 pt-6 border-t border-gray-100">
-                      {errorMsg && (
-                        <div className="bg-red-50 text-red-600 border border-red-100 px-4 py-3 rounded-xl text-sm mb-4">
-                          {errorMsg}
-                        </div>
-                      )}
-                      
-                      <button
-                        onClick={handleGenerate}
-                        disabled={status === 'processing'}
-                        className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-all transform active:scale-95 ${
-                          status === 'processing'
-                            ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed shadow-none'
-                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'
-                        }`}
-                      >
-                        {status === 'processing' ? (
-                          <>
-                            <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            AI 正在绘制中...
-                          </>
-                        ) : (
-                          '开始绘制'
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column: Preview */}
-                <div className="lg:col-span-8 h-full flex flex-col">
-                  <div className="relative flex-1 bg-gray-100 rounded-3xl border border-gray-200 overflow-hidden flex items-center justify-center shadow-inner">
-                    
-                    {status === 'processing' && (
-                       <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
-                          <div className="w-64 h-1.5 bg-gray-200 rounded-full overflow-hidden mb-6">
-                            <div className="h-full bg-indigo-600 animate-progress"></div>
-                          </div>
-                          <h3 className="text-xl font-bold text-zinc-900 mb-2">正在生成艺术人像</h3>
-                          <p className="text-zinc-500 text-sm">Gemini 3 Pro 正在进行 2K 渲染，请稍候...</p>
-                       </div>
-                    )}
-
-                    {generatedImage ? (
-                      <ComparisonSlider beforeImage={uploadedImage} afterImage={generatedImage} />
-                    ) : (
-                      <div className="relative w-full h-full p-12 flex items-center justify-center">
-                        <img 
-                          src={uploadedImage} 
-                          alt="Preview" 
-                          className="max-h-full max-w-full object-contain rounded-lg shadow-2xl opacity-90 transition-all duration-500" 
-                        />
-                        <div className="absolute top-6 left-6">
-                           <span className="bg-black/50 backdrop-blur text-white px-4 py-2 rounded-full text-sm font-medium">原始图片预览</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Bar */}
-                  {generatedImage && status === 'completed' && (
-                    <div className="h-20 mt-6 bg-white border border-gray-200 shadow-lg rounded-2xl flex items-center justify-between px-8 animate-fade-in-up">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span className="text-zinc-900 font-medium">生成完毕</span>
-                        <span className="text-zinc-300 mx-2">|</span>
-                        <span className="text-zinc-500 text-sm">2048 x 2048 px</span>
-                      </div>
-                      <button 
-                        onClick={handleDownload}
-                        className="flex items-center px-6 py-2.5 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 transition-colors shadow-lg shadow-zinc-200"
-                      >
-                        <DownloadIcon />
-                        下载图片
-                      </button>
-                    </div>
-                  )}
-                </div>
+            {/* Enter Workspace Button */}
+            {uploadedImage && (
+              <div className="mt-6">
+                <button
+                  onClick={() => setCurrentView('workspace')}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-indigo-200 transition-all"
+                >
+                  进入工作区
+                </button>
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* VIEW: FEATURES */}
@@ -571,6 +517,143 @@ export default function App() {
                 </div>
              </div>
            </div>
+        )}
+
+        {/* VIEW: WORKSPACE */}
+        {currentView === 'workspace' && uploadedImage && selectedStyle && (
+          <div className="animate-fade-in grid lg:grid-cols-12 gap-8 h-[calc(100vh-10rem)] min-h-[600px]">
+
+            {/* Left Column: Controls */}
+            <div className="lg:col-span-4 flex flex-col h-full">
+              <div className="bg-white border border-gray-100 shadow-xl rounded-3xl p-6 flex-1 flex flex-col">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-lg font-bold text-zinc-900">{selectedStyle.label}</h2>
+                    <p className="text-xs text-zinc-500">Gemini 3 Pro • 2K Mode</p>
+                  </div>
+                  <button onClick={() => setCurrentView('upload')} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-3 py-1 bg-indigo-50 rounded-full">
+                    返回上传
+                  </button>
+                </div>
+
+                {/* Parameters */}
+                {parsedVariables.length > 0 ? (
+                  <div className="space-y-6 overflow-y-auto pr-2 flex-1 custom-scrollbar">
+                     <p className="text-sm text-zinc-500">
+                       请根据喜好调整以下画面细节：
+                     </p>
+                     {parsedVariables.map((v) => (
+                       <div key={v.id}>
+                         <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                            选项 {v.id.split('_')[1]}
+                         </label>
+                         <div className="grid grid-cols-2 gap-2">
+                           {v.options.map((opt) => (
+                             <button
+                               key={opt}
+                               onClick={() => handleVariableChange(v.originalText, opt)}
+                               className={`px-3 py-2.5 text-sm rounded-xl font-medium transition-all text-left border ${
+                                 promptVariables[v.originalText] === opt
+                                   ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200'
+                                   : 'bg-white border-gray-200 text-zinc-600 hover:border-indigo-300 hover:bg-indigo-50'
+                               }`}
+                             >
+                               {opt}
+                             </button>
+                           ))}
+                         </div>
+                       </div>
+                     ))}
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-zinc-400 text-sm text-center px-4 bg-gray-50 rounded-xl my-4">
+                    此风格为全自动生成，无需额外设置。
+                  </div>
+                )}
+
+                {/* Generate Button */}
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  {errorMsg && (
+                    <div className="bg-red-50 text-red-600 border border-red-100 px-4 py-3 rounded-xl text-sm mb-4">
+                      {errorMsg}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleGenerate}
+                    disabled={status === 'processing'}
+                    className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-all transform active:scale-95 ${
+                      status === 'processing'
+                        ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed shadow-none'
+                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'
+                    }`}
+                  >
+                    {status === 'processing' ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        AI 正在绘制中...
+                      </>
+                    ) : (
+                      '开始绘制'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Preview */}
+            <div className="lg:col-span-8 h-full flex flex-col">
+              <div className="relative flex-1 bg-gray-100 rounded-3xl border border-gray-200 overflow-hidden flex items-center justify-center shadow-inner">
+
+                {status === 'processing' && (
+                   <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
+                      <div className="w-64 h-1.5 bg-gray-200 rounded-full overflow-hidden mb-6">
+                        <div className="h-full bg-indigo-600 animate-progress"></div>
+                      </div>
+                      <h3 className="text-xl font-bold text-zinc-900 mb-2">正在生成艺术人像</h3>
+                      <p className="text-zinc-500 text-sm">Gemini 3 Pro 正在进行 2K 渲染，请稍候...</p>
+                   </div>
+                )}
+
+                {generatedImage ? (
+                  <ComparisonSlider beforeImage={uploadedImage} afterImage={generatedImage} />
+                ) : (
+                  <div className="relative w-full h-full p-12 flex items-center justify-center">
+                    <img
+                      src={uploadedImage}
+                      alt="Preview"
+                      className="max-h-full max-w-full object-contain rounded-lg shadow-2xl opacity-90 transition-all duration-500"
+                    />
+                    <div className="absolute top-6 left-6">
+                       <span className="bg-black/50 backdrop-blur text-white px-4 py-2 rounded-full text-sm font-medium">原始图片预览</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Bar */}
+              {generatedImage && status === 'completed' && (
+                <div className="h-20 mt-6 bg-white border border-gray-200 shadow-lg rounded-2xl flex items-center justify-between px-8 animate-fade-in-up">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-zinc-900 font-medium">生成完毕</span>
+                    <span className="text-zinc-300 mx-2">|</span>
+                    <span className="text-zinc-500 text-sm">2048 x 2048 px</span>
+                  </div>
+                  <button
+                    onClick={handleDownload}
+                    className="flex items-center px-6 py-2.5 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 transition-colors shadow-lg shadow-zinc-200"
+                  >
+                    <DownloadIcon />
+                    下载图片
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {/* VIEW: ABOUT */}
