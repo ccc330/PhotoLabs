@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { apiService } from '@/services';
 import { downloadImage } from '@/utils';
 import { Header } from '@/components/layout';
@@ -329,6 +330,7 @@ export default function App() {
             border-radius: 20px;
           }
         `}</style>
+      <SpeedInsights />
     </div>
   );
 }
