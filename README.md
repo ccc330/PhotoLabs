@@ -1,203 +1,148 @@
-# PhotoLabs AI - Supabase 后端部署指南
+# PhotoLabs AI
 
-## 项目概述
+AI 驱动的艺术人像创作工具，基于 Google Gemini 3 Pro 视觉模型。
 
-PhotoLabs AI 已成功迁移到 Supabase 后端架构，将 API 密钥和提示词模板从前端完全移除，提升了安全性。
+## 功能特性
 
-## 前置步骤
+- **Gemini 3 Pro 视觉模型** - 采用 Google 最新一代视觉生成模型，精准理解人物特征并生成 2K 高清艺术作品
+- **精选艺术风格** - 内置 6 款专业调校的艺术风格，涵盖电影叙事、赛博朋克、极简光影等流派
+- **安全云端架构** - 基于 Supabase 云平台，API 密钥与提示词模板完全由服务端管理
+- **简洁创作流程** - 三步完成创作：选择风格 → 上传照片 → 调整参数
 
-### 1. 创建 Supabase 项目
+## 艺术风格
 
-访问 https://supabase.com 并创建新项目：
+| 风格 | 描述 |
+| ------ | ------ |
+| 手绘拼贴艺术 | 黑白胶片质感结合手绘剪贴元素，打造独特的设计感海报风格 |
+| 电影叙事三连拍 | 充满情感的电影镜头语言，通过三段式构图讲述光影与风的故事 |
+| 城市霓虹夜景 | 赛博朋克风格的都市夜景，迷离的霓虹光影映衬出人物的神秘感 |
+| 胶片慢门抓拍 | 模拟复古相机的慢门效果，充满动态模糊与情绪感的瞬间捕捉 |
+| 极简光影剪影 | 利用强烈的单一光源创造戏剧性的投影，极简而富有张力 |
+| 冷调建筑美学 | 置身于宏大的现代主义建筑中，冷峻的色调展现理性的几何美感 |
 
-1. 点击 "New Project"，命名为 \`photolabs-ai\`
-2. 等待项目创建完成（约 2 分钟）
-3. 在 Project Settings → API 中获取：
-   - **Project URL**：格式如 \`https://xxx.supabase.co\`
-   - **Anon Public Key**：\`eyJhbGc...\`
-   - **Service Role Key**：用于 Edge Functions（密钥）
+## 技术栈
+
+### 前端
+
+- React 19 + Vite
+- Tailwind CSS
+- TypeScript
+
+### 后端
+
+- Supabase Edge Functions (Deno)
+- PostgreSQL
+
+### AI
+
+- Google Gemini 3 Pro 视觉模型
+
+## 快速开始
+
+### 1. 克隆项目
+
+```bash
+git clone https://github.com/ccc330/PhotoLabs.git
+cd PhotoLabs
+npm install
+```
 
 ### 2. 配置环境变量
 
-在 Supabase Dashboard → Settings → Edge Functions 中添加：
+复制环境变量模板并填入配置：
 
-\`\`\`
-GEMINI_API_KEY=your_gemini_api_key_here
-\`\`\`
+```bash
+cp .env.local.example .env.local
+```
 
-### 3. 配置前端环境变量
+编辑 `.env.local`：
 
-复制项目根目录的 \`.env.local.example\` 文件为 \`.env.local\`，并填入 Supabase 配置：
-
-\`\`\`env
+```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGc...
-\`\`\`
+```
 
-### 4. 执行数据库迁移
+### 3. 启动开发服务器
 
-有两种方式：
+```bash
+npm run dev
+```
 
-**方式 1：通过 Supabase Dashboard**
-1. 进入项目 Dashboard
-2. 打开 SQL Editor
-3. 将 \`supabase/migrations/001_create_styles_table.sql\` 文件内容粘贴进去
-4. 点击 "Run"
+访问 <http://localhost:3000>
 
-**方式 2：通过 Supabase CLI**
-\`\`\`bash
-# 安装 Supabase CLI
-npm install -g supabase
+## Supabase 后端部署
 
-# 登录并关联项目
+### 创建 Supabase 项目
+
+1. 访问 [Supabase](https://supabase.com) 创建新项目
+2. 在 Project Settings → API 获取：
+   - Project URL
+   - Anon Public Key
+   - Service Role Key
+
+### 配置 Edge Functions 环境变量
+
+在 Supabase Dashboard → Settings → Edge Functions 添加：
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+### 执行数据库迁移
+
+```bash
+# 使用 Supabase CLI
 supabase login
 supabase link --project-ref YOUR_PROJECT_REF
-
-# 执行迁移
 npx supabase db push
-\`\`\`
+```
 
-### 5. 部署 Edge Functions
+或通过 Supabase Dashboard → SQL Editor 执行 `supabase/migrations/001_create_styles_table.sql`
 
-\`\`\`bash
-# 部署 get-styles 函数
+### 部署 Edge Functions
+
+```bash
 npx supabase functions deploy get-styles
-
-# 部署 generate-image 函数
 npx supabase functions deploy generate-image
-
-# 同时部署多个函数
-npx supabase functions deploy get-styles generate-image
-\`\`\`
-
-**注意**：首次部署时，系统会自动读取 Edge Functions 中的环境变量（GEMINI_API_KEY）。
-
-## 运行项目
-
-### 开发模式
-
-\`\`\`bash
-# 启动前端开发服务器
-npm run dev
-\`\`\`
-
-前端将运行在 \`http://localhost:3004\`
-
-### 生产构建
-
-\`\`\`bash
-# 构建前端静态文件
-npm run build
-
-# 构建产物在 \`dist/\` 目录
-\`\`\`
-
-## 安全验证
-
-部署后，请在浏览器开发者工具中验证：
-
-1. **验证 API 密钥不泄露**
-   - 按 F12 打开开发者工具
-   - 在 Sources 标签搜索 \`GEMINI_API_KEY\`
-   - 应该找不到任何结果
-
-2. **验证提示词模板不泄露**
-   - 搜索完整提示词内容（如 "background color: [blue/green/orange]"）
-   - 应该找不到任何结果
-
-3. **验证 Edge Function 响应安全**
-   - 在 Network 标签查看 \`/functions/v1/get-styles\` 请求
-   - 确认响应不包含 \`prompt_template\` 字段
-   - 仅返回 \`variables\` 数组
+```
 
 ## 项目结构
 
-\`\`\`
-Photo_Labs_gemini/
-├── src/                          # 前端源代码
-│   ├── App.tsx               # 主应用（已修改）
-│   ├── components/             # UI 组件
-│   ├── services/               # API 服务层
-│   │   ├── supabase.ts       # Supabase 客户端
-│   │   └── api.ts            # API 调用封装
-│   ├── types/                 # 类型定义
-│   └── utils/                # 工具函数
-├── supabase/                    # Edge Functions
-│   ├── functions/
-│   │   ├── _shared/
-│   │   │   └── types.ts       # 共享类型
-│   │   ├── get-styles/
-│   │   │   └── index.ts       # 获取风格列表
-│   │   └── generate-image/
-│   │       ├── index.ts         # 生成图片
-│   │       └── utils.ts       # 工具函数
-│   └── migrations/
-│       └── 001_create_styles_table.sql  # 数据库迁移
-├── dist/                       # 构建产物
-├── .env.local.example            # 环境变量模板
-├── vite.config.ts              # Vite 配置（已修改）
-└── package.json
-\`\`\`
+```text
+PhotoLabs/
+├── src/
+│   ├── components/          # UI 组件
+│   │   ├── generation/      # 生成按钮、进度指示
+│   │   ├── image-upload/    # 图片上传
+│   │   ├── layout/          # 页面布局、导航
+│   │   ├── pages/           # 功能页、关于页
+│   │   ├── parameter-input/ # 参数表单
+│   │   ├── result-display/  # 图片对比、下载
+│   │   ├── style-selector/  # 风格选择
+│   │   └── ui/              # 通用图标组件
+│   ├── services/            # API 服务层
+│   ├── types/               # TypeScript 类型定义
+│   ├── constants/           # 风格配置
+│   └── utils/               # 工具函数
+├── supabase/
+│   ├── functions/           # Edge Functions
+│   │   ├── get-styles/      # 获取风格列表
+│   │   └── generate-image/  # 生成图片
+│   └── migrations/          # 数据库迁移
+└── public/                  # 静态资源
+```
 
-## 关键改进
+## 安全架构
 
-1. **安全性提升**
-   - API 密钥存储在 Supabase Edge Functions 环境变量
-   - 提示词模板存储在 Supabase 数据库
-   - 前端不再访问任何敏感信息
+- **API 密钥隔离** - Gemini API 密钥仅存储在 Supabase Edge Functions 环境变量中
+- **提示词保护** - 提示词模板存储在数据库，前端仅接收解析后的参数选项
+- **错误信息脱敏** - 服务端错误信息经过处理后返回，不泄露内部细节
+- **降级机制** - Edge Function 不可用时自动切换到本地数据模式
 
-2. **架构优化**
-   - 使用 Supabase 平台提供的 PostgreSQL 数据库
-   - Edge Functions 提供无服务器计算能力
-   - 自动扩展和负载均衡
+## 使用声明
 
-3. **代码组织**
-   - 清晰的前后端分离
-   - 类型安全的数据访问
-   - 模块化的 Edge Functions
+生成图片仅供个人娱乐与非商业用途。AI 生成内容可能存在不可预测性，请勿上传涉及隐私、暴力或版权争议的照片。使用本服务即表示您同意遵守 [Google Generative AI 使用条款](https://ai.google.dev/terms)。
 
-## 后续扩展
+## License
 
-在第二阶段，可以考虑：
-
-1. **用户认证**
-   - 使用 Supabase Auth 添加用户登录
-   - 实现用户配额管理
-
-2. **生成历史**
-   - 创建 \`generations\` 表记录每次生成
-   - 支持查看历史和重新生成
-
-3. **图片存储**
-   - 使用 Supabase Storage 存储生成的图片
-   - 生成可分享的公开 URL
-
-4. **性能优化**
-   - 添加 Redis 缓存
-   - 实现风格列表缓存
-
-## 故障排查
-
-### 问题：Edge Function 调用失败
-
-**症状**：前端报错 "Failed to fetch styles" 或 "Generation failed"
-
-**解决方案**：
-1. 检查 Supabase Dashboard → Edge Functions 日志
-2. 确认函数已成功部署
-3. 验证环境变量 \`GEMINI_API_KEY\` 已配置
-
-### 问题：数据库连接失败
-
-**症状**：Edge Function 报错 "Failed to fetch styles"
-
-**解决方案**：
-1. 确认数据库迁移已执行
-2. 检查 Supabase Dashboard → Database 中的 \`styles\` 表
-3. 验证 \`Service Role Key\` 配置正确
-
-## 技术支持
-
-- Supabase 文档：https://supabase.com/docs
-- Supabase Dashboard：https://supabase.com/dashboard
-- Gemini AI 文档：https://ai.google.dev/gemini-api/docs
+MIT
