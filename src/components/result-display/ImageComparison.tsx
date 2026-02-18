@@ -5,7 +5,7 @@ interface ComparisonSliderProps {
   afterImage: string;
 }
 
-export const ComparisonSlider: React.FC<ComparisonSliderProps> = ({ beforeImage, afterImage }) => {
+export function ImageComparison({ beforeImage, afterImage }: ComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,8 +52,8 @@ export const ComparisonSlider: React.FC<ComparisonSliderProps> = ({ beforeImage,
   }, [isDragging, handleMove]);
 
   return (
-    <div 
-      className="relative w-full max-w-2xl mx-auto h-[600px] rounded-xl overflow-hidden shadow-2xl border border-white/10 select-none cursor-ew-resize bg-black"
+    <div
+      className="relative w-full max-w-2xl mx-auto h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden shadow-2xl border border-white/10 select-none cursor-ew-resize bg-black"
       ref={containerRef}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}

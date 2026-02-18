@@ -1,6 +1,19 @@
-import { PortraitStyle } from './types';
+import { PublicPortraitStyle, StyleVariable } from '@/types';
 
-export const PORTRAIT_STYLES: PortraitStyle[] = [
+// 解析模板中的变量 [option1/option2/option3]
+function parseVariables(template: string): StyleVariable[] {
+  const regex = /\[(.*?)\]/g;
+  const matches = [...template.matchAll(regex)];
+
+  return matches.map((match, index) => ({
+    key: `var_${index}`,
+    label: `选项 ${index + 1}`,
+    choices: match[1].split('/').map(s => s.trim())
+  }));
+}
+
+// 原始风格模板数据
+const RAW_STYLES = [
   {
     id: 'style_01',
     name: 'Hand-Drawn Collage',
@@ -103,3 +116,20 @@ Place the subject inside a cold, modern architectural space with clean lines, co
 Cool color palette, controlled light, contemporary art photography style.`
   }
 ];
+
+// 转换为 PublicPortraitStyle 格式（包含解析后的 variables）
+export const PORTRAIT_STYLES: PublicPortraitStyle[] = RAW_STYLES.map(style => ({
+  id: style.id,
+  name: style.name,
+  label: style.label,
+  description: style.description,
+  gradient: style.gradient,
+  userInstruction: style.userInstruction,
+  variables: parseVariables(style.promptTemplate)
+}));
+
+// 导出原始模板（供 generate-image Edge Function 使用）
+export const STYLE_TEMPLATES = RAW_STYLES.reduce((acc, style) => {
+  acc[style.id] = style.promptTemplate;
+  return acc;
+}, {} as Record<string, string>);
