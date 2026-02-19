@@ -75,11 +75,11 @@ serve(async (req) => {
     // 创建 Supabase 客户端（使用 Service Role Key 访问所有数据）
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 从数据库获取所有风格（包含 prompt_template）
+    // 从数据库获取所有风格（包含 prompt_template），按创建时间降序排列（新风格在前）
     const { data: styles, error } = await supabase
       .from('styles')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Database error:', error);

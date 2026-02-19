@@ -165,7 +165,7 @@ export default function App() {
 
             <div className="mb-12 text-center">
               <h2 className="text-2xl font-bold text-zinc-800">选择你的艺术风格</h2>
-              <p className="text-zinc-500 mt-2">我们为你准备了 6 种独特的艺术风格，每种风格都能带来不同的视觉体验</p>
+              <p className="text-zinc-500 mt-2">多种独特的艺术风格，每种风格都能带来不同的视觉体验</p>
             </div>
 
             {loadingStyles ? (

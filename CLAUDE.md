@@ -90,15 +90,74 @@ Configured in [vite.config.ts](vite.config.ts):
 
 ## Adding a New Style
 
-### Option 1: Database (Production)
+**重要**: 新增风格需要**同时**修改本地数据和 Supabase 数据库，因为生产环境优先使用 Edge Function 数据。
 
-1. Insert into Supabase `styles` table with all fields including `prompt_template`
-2. Edge Functions will automatically expose it
+### Step 1: 本地数据 (portrait-styles.ts)
 
-### Option 2: Local Fallback (Development)
+在 [portrait-styles.ts](src/constants/portrait-styles.ts) 的 `RAW_STYLES` 数组**开头**插入新风格：
 
-1. Add entry to `RAW_STYLES` array in [portrait-styles.ts](src/constants/portrait-styles.ts)
-2. Include `promptTemplate` with `[option1/option2]` syntax for customizable parameters
+```typescript
+{
+  id: 'style_XX',
+  name: 'English Name',
+  label: '中文名称',
+  description: '风格描述',
+  gradient: 'from-red-500 to-red-700',
+  coverImage: '/images_style-examples/style-examples_XX.jpg',
+  userInstruction: '上传要求说明',
+  promptTemplate: `完整的 AI prompt 模板`
+}
+```
+
+**注意**:
+- 在数组开头插入才能显示在最前面（本地降级模式）
+- `coverImage` 路径: `/images_style-examples/style-examples_XX.jpg`
+- 图片文件放在 `public/images_style-examples/` 目录
+
+### Step 2: Supabase 数据库 (生产环境)
+
+1. **上传封面图片** 到 Supabase Storage
+2. **插入数据库记录**:
+
+```sql
+INSERT INTO styles (id, name, label, description, gradient, cover_image, user_instruction, prompt_template, created_at, updated_at)
+VALUES (
+  'style_XX',
+  'English Name',
+  '中文名称',
+  '风格描述',
+  'from-red-500 to-red-700',
+  'https://your-project.supabase.co/storage/v1/object/public/...',
+  '上传要求说明',
+  '完整的 prompt 模板',
+  NOW(),
+  NOW()
+);
+```
+
+### Step 3: 部署 Edge Function (如有修改)
+
+```bash
+npx supabase functions deploy get-styles
+```
+
+### 排序规则
+
+- **Edge Function**: 按 `created_at` 降序排列（新风格在前）
+- **本地数据**: 按数组顺序排列
+- 如需调整顺序，修改 Edge Function 的 `.order('created_at', { ascending: false })`
+
+### 文案注意事项
+
+避免在 UI 中使用具体数字，方便后续扩展：
+
+```tsx
+// ❌ 不好
+<p>我们为你准备了 6 种独特的艺术风格</p>
+
+// ✅ 好
+<p>多种独特的艺术风格</p>
+```
 
 ## Image Processing
 

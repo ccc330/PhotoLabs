@@ -14,6 +14,67 @@ function parseVariables(template: string): StyleVariable[] {
 
 // 原始风格模板数据
 const RAW_STYLES = [
+  // Style 07: 马年前卫风
+  {
+    id: 'style_07',
+    name: 'Year of the Horse Avant-Garde',
+    label: '马年前卫风',
+    description: '高对比度前卫时尚肖像，红衣与黑马形成强烈视觉冲击。',
+    gradient: 'from-red-500 to-red-700',
+    coverImage: '/images_style-examples/style-examples_7.jpg',
+    userInstruction: '上半身或全身近照',
+    promptTemplate: `Using the attached photo as a facial reference, preserve the person's facial identity accurately and consistently.
+
+Create a high-contrast avant-garde fashion portrait featuring the subject and a dark horse.
+
+Subject & Styling:
+The character wears loose, modern Chinese minimalist red clothing.
+- Accessories: Red-framed geometric sunglasses.
+- Expression: Calm, neutral, and powerful.
+
+Composition & Interaction:
+A dark brown or black horse stands behind the model.
+The horse's head rests intimately on the model's shoulder or near their head.
+The dark color of the horse provides a striking contrast to the red surroundings.
+
+Environment:
+- Solid pure red background: The model's clothing should visually blend into the background, creating a flat, graphic effect.
+- Monochromatic palette: Dominant red tones with black accents.
+- Style: Minimalist, editorial, artistic photography.
+
+Do NOT add patterns or complex textures to the background.`
+  },
+  // Style 08: 马年剪纸风
+  {
+    id: 'style_08',
+    name: 'Year of the Horse Paper-Cut',
+    label: '马年剪纸风',
+    description: '马年主题高级时尚肖像，传统剪纸艺术与现代摄影的融合。',
+    gradient: 'from-red-400 to-rose-600',
+    coverImage: '/images_style-examples/style-examples_8.jpg',
+    userInstruction: '半身或全身近照',
+    promptTemplate: `Using the attached photo as a facial reference, preserve the person's facial identity accurately and consistently.
+
+Create a high-fashion editorial portrait with a "Year of the Horse" theme. The composition should be artistic, noble, and culturally rich.
+
+Subject & Attire:
+- The subject matching the attached photo, with a calm, elegant expression, looking at the camera.
+- The main character is dressed in a bespoke scarlet gown, crafted from high-end fabric.
+- A luxurious beige and red shawl featuring a distinct monogram pattern (visible 'Ch' motifs) is draped over her left shoulder and arm. He gently grasps the edge of the shawl with her left hand.
+- Accessories include gold earrings.
+
+Scene Composition:
+- Foreground (Left): A giant red paper-cut style floral installation stands upright, featuring traditional hollow-out art details.
+- Background: A deep red textured wall. Projected onto this wall is a soft, diffused shadow of a horse's head and neck.
+
+Atmosphere & Technicals:
+- Color Palette: Monochromatic red theme (Scarlet, Deep Maroon) with Beige and faded Grey/Black for the shadow.
+- Lighting: Soft, cinematic lighting on the subject; the background projection is dim and atmospheric.
+- Mood: Artistic, noble, cultural, and avant-garde.
+
+Do NOT generate a real horse; the background must be a shadow/silhouette.
+Do NOT distort the facial features.`
+  },
   {
     id: 'style_01',
     name: 'Hand-Drawn Collage',
@@ -124,6 +185,7 @@ export const PORTRAIT_STYLES: PublicPortraitStyle[] = RAW_STYLES.map(style => ({
   label: style.label,
   description: style.description,
   gradient: style.gradient,
+  coverImage: style.coverImage,
   userInstruction: style.userInstruction,
   variables: parseVariables(style.promptTemplate)
 }));
