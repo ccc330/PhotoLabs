@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { apiService } from '@/services';
-import { downloadImage } from '@/utils';
+import { downloadImage, compressImage, formatBytes } from '@/utils';
 import { Header } from '@/components/layout';
 import { StyleGrid } from '@/components/style-selector';
 import { UploadZone } from '@/components/image-upload';
@@ -25,6 +25,7 @@ export default function App() {
   const [status, setStatus] = useState<GenerationStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [promptVariables, setPromptVariables] = useState<Record<string, string>>({});
+  const [isCompressing, setIsCompressing] = useState(false);
 
   useEffect(() => {
     // 加载风格列表
@@ -77,20 +78,29 @@ export default function App() {
     }
   }, [parsedVariables, promptVariables]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert("图片大小不能超过 5MB");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
+
+      setIsCompressing(true);
+
+      try {
+        const result = await compressImage(file);
+
+        // 可选：在控制台输出压缩信息
+        if (result.wasCompressed) {
+          console.log(`图片已压缩: ${formatBytes(result.originalSize)} → ${formatBytes(result.compressedSize)}`);
+        }
+
+        setUploadedImage(result.base64);
         setGeneratedImage(null);
         setStatus('idle');
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('图片压缩失败:', error);
+        alert('图片处理失败，请重试');
+      } finally {
+        setIsCompressing(false);
+      }
     }
   };
 
@@ -194,6 +204,7 @@ export default function App() {
             <UploadZone
               selectedStyle={selectedStyle}
               uploadedImage={uploadedImage}
+              isCompressing={isCompressing}
               onFileUpload={handleFileUpload}
               onReupload={() => setUploadedImage(null)}
             />

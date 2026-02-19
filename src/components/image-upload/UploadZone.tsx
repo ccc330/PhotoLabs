@@ -5,18 +5,32 @@ import { UploadIcon } from '@/components/ui';
 interface UploadZoneProps {
   selectedStyle: PublicPortraitStyle;
   uploadedImage: string | null;
+  isCompressing?: boolean;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onReupload: () => void;
 }
 
-export function UploadZone({ selectedStyle, uploadedImage, onFileUpload, onReupload }: UploadZoneProps) {
+export function UploadZone({
+  selectedStyle,
+  uploadedImage,
+  isCompressing = false,
+  onFileUpload,
+  onReupload
+}: UploadZoneProps) {
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-4 md:p-8">
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <h3 className="text-center text-lg md:text-xl font-bold w-full">上传你的照片</h3>
       </div>
 
-      {uploadedImage ? (
+      {/* 压缩中状态 */}
+      {isCompressing ? (
+        <div className="aspect-square sm:aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9] rounded-2xl bg-gray-50 flex flex-col items-center justify-center">
+          <div className="animate-spin w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full mb-4" />
+          <span className="text-zinc-600 font-medium">正在优化图片...</span>
+          <span className="text-zinc-400 text-sm mt-1">大图将自动压缩</span>
+        </div>
+      ) : uploadedImage ? (
         // 已上传图片 - 显示在框内
         <div className="relative">
           <div className="aspect-square sm:aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9] rounded-2xl overflow-hidden bg-gray-100">
@@ -41,7 +55,7 @@ export function UploadZone({ selectedStyle, uploadedImage, onFileUpload, onReupl
             <UploadIcon className="w-6 h-6 md:w-8 md:h-8" />
           </div>
           <span className="text-base md:text-lg font-semibold text-zinc-700 mb-1">点击上传参考图片</span>
-          <p className="text-sm text-zinc-400">支持 JPEG 或 PNG，最大 5MB</p>
+          <p className="text-sm text-zinc-400">支持 JPEG 或 PNG，大图将自动压缩</p>
         </label>
       )}
 
