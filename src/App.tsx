@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { apiService } from '@/services';
 import { downloadImage, compressImage, formatBytes } from '@/utils';
 import { Header } from '@/components/layout';
@@ -340,6 +341,7 @@ export default function App() {
             border-radius: 20px;
           }
         `}</style>
+      <Analytics />
     </div>
   );
 }
